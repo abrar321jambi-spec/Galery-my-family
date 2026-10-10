@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My family</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        playfair: ['Playfair Display', 'serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        warmbg: '#FAF7F2',
+                        cardbg: '#FFFFFF',
+                        earth: '#8C6D53',
+                        sand: '#D9C5B2',
+                        terracotta: '#C86D51',
+                        softdark: '#2C2A29'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #FAF7F2;
+            color: #2C2A29;
+            overflow-x: hidden;
+        }
+
+        .heading-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Aesthetic Polaroid Card & Smooth Zoom Animation */
+        .polaroid-card {
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            background: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(140, 109, 83, 0.12), 0 8px 10px -6px rgba(140, 109, 83, 0.08);
+        }
+
+        .polaroid-card:hover {
+            transform: translateY(-8px) scale(1.03) rotate(0deg) !important;
+            box-shadow: 0 22px 35px -8px rgba(140, 109, 83, 0.25);
+            z-index: 20;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #FAF7F2;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #D9C5B2;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8C6D53;
+        }
+    </style>
+</head>
+
+<body class="bg-warmbg text-softdark antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Hero Section -->
+    <header
+        class="relative bg-gradient-to-b from-[#F3EFEA] to-warmbg pt-16 pb-12 px-6 text-center border-b border-[#EBE3D5]">
+        <!-- Floating Audio Control Widget -->
+        <div class="absolute top-6 right-6 sm:right-12">
+            <button id="audioToggleBtn" onclick="toggleAudio()"
+                class="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-[#D9C5B2] shadow-sm hover:bg-[#F3EFEA] transition-all text-xs font-medium text-earth">
+                <span id="audioIconContainer"
+                    class="w-6 h-6 rounded-full bg-earth text-white flex items-center justify-center">
+                    <i id="audioIcon" class="fa-solid fa-volume-high text-[10px]"></i>
+                </span>
+                <span id="audioLabel">Musik</span>
+            </button>
+        </div>
+
+        <div class="max-w-4xl mx-auto space-y-4">
+            <h1 class="heading-font text-4xl sm:text-6xl font-bold tracking-tight text-softdark">
+                My family
+            </h1>
+            <p class="text-sm sm:text-base text-gray-600 max-w-xl mx-auto leading-relaxed">
+
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Gallery Container (Abstract Layout) -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex-grow">
+        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 items-start">
+            <!-- Photos will be injected dynamically via JS with abstract layout classes -->
+        </div>
+    </main>
+
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-warmbg rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl relative border border-[#D9C5B2] transform transition-transform duration-300 scale-95"
+            id="lightboxContent">
+            <!-- Close button -->
+            <button onclick="closeLightbox()"
+                class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-softdark flex items-center justify-center shadow transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex flex-col md:flex-row">
+                <!-- Modal Image Container -->
+                <div class="md:w-1/2 bg-black flex items-center justify-center relative min-h-[300px]">
+                    <img id="modalImage" src="" alt="Zoomed Photo" class="max-h-[400px] w-full object-contain">
+                </div>
+                <!-- Modal Details Container -->
+                <div class="md:w-1/2 p-6 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 id="modalTitle" class="heading-font text-2xl font-bold text-softdark"></h3>
+                        <p id="modalDate" class="text-xs text-gray-500 mt-1"><i
+                                class="fa-regular fa-calendar mr-1.5"></i> <span id="modalDateText"></span></p>
+                        <p id="modalCaption"
+                            class="text-sm text-gray-700 mt-4 leading-relaxed bg-white p-4 rounded-xl border border-[#EBE3D5] italic">
+                        </p>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="flex items-center justify-end pt-4 border-t border-[#EBE3D5]">
+                        <button onclick="closeLightbox()"
+                            class="px-5 py-2 rounded-xl bg-earth text-white hover:bg-[#72543d] transition-all text-sm font-medium">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#F3EFEA] border-t border-[#EBE3D5] py-8 text-center text-xs sm:text-sm text-gray-600">
+        <div class="max-w-4xl mx-auto px-4 space-y-2">
+            <p class="font-medium heading-font text-base text-softdark"></p>
+            <p>By: Abrar zulfaritz.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic & Web Audio API Ambient Synthesizer -->
+    <script>
+        const familyPhotos = [
+            {
+                id: 1,
+                url: "https://cdn.phototourl.com/member/2026-10-10-7f8394d0-6ca7-47ae-b21e-2be40e706d92.jpg",
+                title: "",
+                caption: "Lebaran 2026.",
+                date: "Palembang, 2026"
+            },
+            {
+                id: 2,
+                url: "https://cdn.phototourl.com/member/2026-10-10-139f383a-c992-483a-ba13-611310661f10.jpg",
+                title: "",
+                caption: "Liburan",
+                date: "Yogyakarta 2025"
+            },
+            {
+                id: 3,
+                url: "https://cdn.phototourl.com/member/2026-10-10-d2fc5c11-57ef-487d-addf-8baaa80d1ba0.jpg",
+                title: "",
+                caption: "Liburan",
+                date: "Dieng 2025"
+            },
+            {
+                id: 4,
+                url: "https://cdn.phototourl.com/member/2026-10-10-d4a86a3e-673f-4090-9617-46b47cd544a9.jpg",
+                title: "",
+                caption: "Lebaran 2026.",
+                date: "Palembang 2026"
+            },
+            {
+                id: 5,
+                url: "https://cdn.phototourl.com/member/2026-10-10-a746f0cb-6d09-4dd1-bc59-fa63fdfa1729.jpg",
+                title: "",
+                caption: "Liburan.",
+                date: "Yogyakarta 2025"
+            },
+            {
+                id: 6,
+                url: "https://cdn.phototourl.com/member/2026-10-10-1925736d-ed9d-4173-b366-066db54855bb.jpg",
+                title: "",
+                caption: "Liburan",
+                date: "Riau 2017"
+            },
+            {
+                id: 7,
+                url: "https://cdn.phototourl.com/member/2026-10-10-c11343ba-f4e0-4e1e-9d09-50eddfa73741.jpg",
+                title: "",
+                caption: "Liburan.",
+                date: "Puncak sikunir 2025"
+            },
+            {
+                id: 8,
+                url: "https://cdn.phototourl.com/member/2026-10-10-4a1d2501-415e-4c7f-bb89-b5e37ec1a482.jpg",
+                title: "",
+                caption: "Liburan.",
+                date: "Otw naik puncak 2025"
+            },
+            {
+                id: 9,
+                url: "https://cdn.phototourl.com/member/2026-10-10-9d2592de-9390-4b22-912c-7b080b218571.jpg",
+                title: "",
+                caption: "Lebaran.",
+                date: "Palembang 2026"
+            },
+            {
+                id: 10,
+                url: "https://cdn.phototourl.com/member/2026-10-10-e08cb3df-c316-4f64-81dc-bb6ae917dc79.jpg",
+                title: "",
+                caption: "Bukber.",
+                date: "Puasa 2026"
+            },
+            {
+                id: 11,
+                url: "https://cdn.phototourl.com/member/2026-10-10-87aa7692-e115-46ed-9d50-868b635325d3.jpg",
+                title: "",
+                caption: "Liburan.",
+                date: "Dieng 2026"
+            },
+            {
+                id: 12,
+                url: "https://cdn.phototourl.com/member/2026-10-10-7c25da22-2808-40d7-9605-125a220306f9.jpg",
+                title: "",
+                caption: "Makan malam.",
+                date: "Jakarta 2023"
+            }
+        ];
+
+        // Array kelas abstrak untuk memberikan variasi posisi dan rotasi secara dinamis
+        const abstractStyles = [
+            "sm:-translate-y-4 sm:rotate-1",
+            "sm:translate-y-8 sm:-rotate-2",
+            "sm:-translate-y-2 sm:rotate-2",
+            "sm:translate-y-6 sm:-rotate-1",
+            "sm:-translate-y-6 sm:rotate-3",
+            "sm:translate-y-4 sm:-rotate-3"
+        ];
+
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+
+            familyPhotos.forEach((photo, index) => {
+                const card = document.createElement('div');
+                // Mengambil variasi posisi abstrak secara bergantian berdasarkan index
+                const randomStyle = abstractStyles[index % abstractStyles.length];
+
+                card.className = `polaroid-card p-3 sm:p-4 rounded-2xl flex flex-col justify-between cursor-pointer group ${randomStyle}`;
+                card.onclick = () => openLightbox(photo.id);
+
+                card.innerHTML = `
+                    <div class="relative overflow-hidden rounded-xl aspect-[4/3] bg-gray-100">
+                        <img src="${photo.url}" alt="${photo.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://placehold.co/600x400/FAF7F2/8C6D53?text=Foto+Keluarga'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                            <span class="text-white text-xs font-medium tracking-wide bg-black/40 px-2.5 py-1 rounded-full backdrop-blur-sm">
+                                <i class="fa-solid fa-expand mr-1"></i> Klik untuk zoom
+                            </span>
+                        </div>
+                    </div>
+                    <div class="pt-3 pb-1 px-1 flex flex-col justify-between flex-grow">
+                        <div>
+                            <h3 class="heading-font font-bold text-base text-softdark group-hover:text-terracotta transition-colors line-clamp-1 mt-0.5">${photo.title}</h3>
+                            <p class="text-xs text-gray-500 line-clamp-2 mt-1">${photo.caption}</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 mt-2 border-t border-[#F3EFEA] text-xs text-gray-500">
+                            <span><i class="fa-regular fa-calendar mr-1"></i> ${photo.date}</span>
+                            <span class="text-earth font-medium text-[11px]">My Family</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openLightbox(id) {
+            const photo = familyPhotos.find(p => p.id === id);
+            if (!photo) return;
+
+            document.getElementById('modalImage').src = photo.url;
+            document.getElementById('modalTitle').innerText = photo.title;
+            document.getElementById('modalDateText').innerText = photo.date;
+            document.getElementById('modalCaption').innerText = `"${photo.caption}"`;
+
+            const modal = document.getElementById('lightboxModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                document.getElementById('lightboxContent').classList.remove('scale-95');
+                document.getElementById('lightboxContent').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeLightbox() {
+            const modal = document.getElementById('lightboxModal');
+            document.getElementById('lightboxContent').classList.remove('scale-100');
+            document.getElementById('lightboxContent').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Web Audio API Relaxing Lo-Fi / Acoustic Chord Generator
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let ambientInterval = null;
+
+        const chordSets = [
+            [261.63, 329.63, 392.00, 493.88], // Cmaj7
+            [220.00, 261.63, 329.63, 392.00], // Am7
+            [174.61, 220.00, 261.63, 329.63], // Fmaj7
+            [196.00, 246.94, 293.66, 369.99]  // G6
+        ];
+
+        function startAmbientAudio() {
+            if (isAudioPlaying) return;
+
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                isAudioPlaying = true;
+                updateAudioUI(true);
+
+                let chordIndex = 0;
+
+                function playChord() {
+                    if (!isAudioPlaying || !audioCtx) return;
+                    const chord = chordSets[chordIndex];
+                    chordIndex = (chordIndex + 1) % chordSets.length;
+
+                    chord.forEach((freq, i) => {
+                        try {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+
+                            osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                            const now = audioCtx.currentTime;
+                            gain.gain.setValueAtTime(0, now);
+                            gain.gain.linearRampToValueAtTime(0.04, now + 1.5);
+                            gain.gain.exponentialRampToValueAtTime(0.0001, now + 5.5);
+
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+
+                            osc.start(now);
+                            osc.stop(now + 6.0);
+                        } catch (err) {
+                            console.log("Oscillator error:", err);
+                        }
+                    });
+                }
+
+                playChord();
+                ambientInterval = setInterval(playChord, 5000);
+
+            } catch (e) {
+                console.log("Web Audio autoplay prevented or not supported:", e);
+                isAudioPlaying = false;
+                updateAudioUI(false);
+            }
+        }
+
+        function stopAmbientAudio() {
+            isAudioPlaying = false;
+            if (ambientInterval) {
+                clearInterval(ambientInterval);
+                ambientInterval = null;
+            }
+            if (audioCtx && audioCtx.state === 'running') {
+                audioCtx.suspend();
+            }
+            updateAudioUI(false);
+        }
+
+        function toggleAudio() {
+            if (isAudioPlaying) {
+                stopAmbientAudio();
+            } else {
+                startAmbientAudio();
+            }
+        }
+
+        function updateAudioUI(playing) {
+            const iconContainer = document.getElementById('audioIconContainer');
+            const icon = document.getElementById('audioIcon');
+            const label = document.getElementById('audioLabel');
+
+            if (playing) {
+                icon.className = "fa-solid fa-volume-high text-[10px]";
+                iconContainer.className = "w-6 h-6 rounded-full bg-earth text-white flex items-center justify-center animate-pulse";
+                label.innerText = "Musik Lo-Fi: On";
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-[10px]";
+                iconContainer.className = "w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center";
+                label.innerText = "Musik Lo-Fi: Off";
+            }
+        }
+
+        window.onload = () => {
+            renderGallery();
+
+            setTimeout(() => {
+                startAmbientAudio();
+            }, 500);
+
+            const unlockAudio = () => {
+                if (!isAudioPlaying) {
+                    startAmbientAudio();
+                }
+                window.removeEventListener('click', unlockAudio);
+                window.removeEventListener('touchstart', unlockAudio);
+                window.removeEventListener('scroll', unlockAudio);
+            };
+
+            window.addEventListener('click', unlockAudio);
+            window.addEventListener('touchstart', unlockAudio);
+            window.addEventListener('scroll', unlockAudio);
+        };
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('lightboxModal');
+            if (event.target === modal) {
+                closeLightbox();
+            }
+        }
+    </script>
+</body>
+
+</html>
